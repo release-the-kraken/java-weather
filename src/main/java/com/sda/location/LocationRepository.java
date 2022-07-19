@@ -23,8 +23,8 @@ public class LocationRepository {
                     .getTransaction()
                     .rollback();
             System.out.println("Database operation failed. Error message: %s".formatted(e.getMessage()));
+            return null;
         }
-        return null;
     }
 
     List<Location> findAll(){
@@ -32,6 +32,18 @@ public class LocationRepository {
     }
 
     Optional<Location> findById(Long id){
-        return Optional.empty();
+        Session session = sessionFactory.openSession();
+        try(session){
+            Transaction transaction = session.beginTransaction();
+            Location location = session.createQuery("select l from location l where id=:id", Location.class).getSingleResult();
+            transaction.commit();
+            return Optional.ofNullable(location);
+        }catch(Exception e){
+            session
+                    .getTransaction()
+                    .rollback();
+            System.out.println("Database operation failed. Error message: %s".formatted(e.getMessage()));
+            return Optional.empty();
+        }
     }
 }

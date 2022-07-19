@@ -39,6 +39,17 @@ public class LocationController {
                 .build();
     }
 
+    //GET:/locations
+    String getLocationById(Long id) {
+        try {
+            LocationDTO locationDTO = locationService.getByID(id);
+            return gson.toJson(locationDTO);
+        } catch (IllegalArgumentException e) {
+            return "Error message: %s".formatted(e.getMessage());
+        }
+
+    }
+
     // GET:/locations
     String getLocations() {
         return "";

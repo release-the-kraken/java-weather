@@ -8,6 +8,8 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+
 @RequiredArgsConstructor
 public class LocationService {
     private final LocationRepository locationRepository;
@@ -38,7 +40,19 @@ public class LocationService {
         Location savedLocation = locationRepository.save(location);
         return savedLocation;
     }
-
+    LocationDTO getByID(Long id){
+        Optional<Location> locationOptional = locationRepository.findById(id);
+        Location location = locationOptional
+                .orElseThrow(() -> new IllegalArgumentException("No entry with id %s.".formatted(id)));
+        LocationDTO locationDTO = LocationDTO.builder()
+                .id(location.getId())
+                .city(location.getCity())
+                .region(location.getRegion())
+                .longitude(location.getLongitude())
+                .latitude(location.getLatitude())
+                .build();
+        return locationDTO;
+    }
     List<Location> getAll(){
 
         return Collections.emptyList();
