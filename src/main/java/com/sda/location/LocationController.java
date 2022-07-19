@@ -40,7 +40,7 @@ public class LocationController {
     }
 
     //GET:/locations
-    String getLocationById(Long id) {
+    public String getLocationById(Long id) {
         try {
             LocationDTO locationDTO = locationService.getByID(id);
             return gson.toJson(locationDTO);
@@ -51,7 +51,7 @@ public class LocationController {
     }
 
     // GET:/locations
-    String getLocations() {
+    public String getLocations() {
         return "";
     }
 }

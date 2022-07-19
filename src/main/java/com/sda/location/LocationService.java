@@ -30,6 +30,9 @@ public class LocationService {
         if(latitude == null || latitude < MIN_LATITUDE || latitude > MAX_LATITUDE){
             throw new IllegalArgumentException("Latitude can't be empty and must be between -90.00 and 90.00");
         }
+        if(region.isBlank()){
+            region = "N/A";
+        }
         Location location = new Location();
         location.setCity(city);
         location.setRegion(region);
