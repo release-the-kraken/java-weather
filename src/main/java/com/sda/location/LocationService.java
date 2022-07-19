@@ -8,6 +8,8 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+
 @RequiredArgsConstructor
 public class LocationService {
     private final LocationRepository locationRepository;
@@ -28,6 +30,9 @@ public class LocationService {
         if(latitude == null || latitude < MIN_LATITUDE || latitude > MAX_LATITUDE){
             throw new IllegalArgumentException("Latitude can't be empty and must be between -90.00 and 90.00");
         }
+        if(region.isBlank()){
+            region = "N/A";
+        }
         Location location = new Location();
         location.setCity(city);
         location.setRegion(region);
@@ -38,9 +43,20 @@ public class LocationService {
         Location savedLocation = locationRepository.save(location);
         return savedLocation;
     }
-
+    LocationDTO getByID(Long id){
+        Optional<Location> locationOptional = locationRepository.findById(id);
+        Location location = locationOptional
+                .orElseThrow(() -> new IllegalArgumentException("No entry with id %s.".formatted(id)));
+        LocationDTO locationDTO = LocationDTO.builder()
+                .id(location.getId())
+                .city(location.getCity())
+                .region(location.getRegion())
+                .longitude(location.getLongitude())
+                .latitude(location.getLatitude())
+                .build();
+        return locationDTO;
+    }
     List<Location> getAll(){
-
-        return Collections.emptyList();
+        return locationRepository.findAll();
     }
 }

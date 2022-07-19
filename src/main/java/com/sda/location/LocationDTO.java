@@ -10,7 +10,7 @@ import java.time.Instant;
 public class LocationDTO {
     private Long id;
     private final String city;
-    private String region = "N/A";
+    private String region;
     private final String country;
     private final Double longitude;
     private final Double latitude;
