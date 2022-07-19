@@ -29,7 +29,18 @@ public class LocationRepository {
     }
 
     List<Location> findAll() {
-        return Collections.emptyList();
+        Session session = sessionFactory.openSession();
+        Transaction transaction = session.beginTransaction();
+
+        try {
+            List<Location> locations = session.createQuery("select l from Location l", Location.class).getResultList();
+            transaction.commit();
+            return locations;
+        } catch (Exception e) {
+            transaction.rollback();
+            System.out.println("Database operation failed. Error message: %s".formatted(e.getMessage()));
+            return Collections.emptyList();
+        }
     }
 
     Optional<Location> findById(Long id) {

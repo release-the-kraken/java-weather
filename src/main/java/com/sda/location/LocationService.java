@@ -57,7 +57,6 @@ public class LocationService {
         return locationDTO;
     }
     List<Location> getAll(){
-
-        return Collections.emptyList();
+        return locationRepository.findAll();
     }
 }

@@ -1,9 +1,12 @@
 package com.sda.client;
 
 import com.sda.location.LocationController;
+import com.sda.location.LocationDTO;
 import lombok.RequiredArgsConstructor;
 
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 @RequiredArgsConstructor
 public class UserInterface {
@@ -17,6 +20,7 @@ public class UserInterface {
         while (true) {
             System.out.println(" 1. Add a location");
             System.out.println(" 2. Get location by id");
+            System.out.println(" 3. Get all locations");
             System.out.println(" 0. Close app");
             int option = scanner.nextInt();
 
@@ -26,6 +30,9 @@ public class UserInterface {
                     break;
                 case 2:
                     getLocationById(scanner);
+                    break;
+                case 3:
+                    getAllLocations(scanner);
                 case 0:
                     return;
             }
@@ -49,11 +56,18 @@ public class UserInterface {
         System.out.println("Sending Http request: %s".formatted(request));
         String response = locationController.createLocation(request);
         System.out.println("Server response: %s".formatted(response));
+        scanner.close();
     }
 
     private String createMockRequest(String city, String region, String country, Double longitude, Double latitude) {
         return "{\"city\":\"%s\", \"region\":\"%s\", \"country\":\"%s\", \"longitude\":\"%s\", \"latitude\":\"%s\"}"
                 .formatted(city, region, country, longitude, latitude);
+    }
+
+    private void getAllLocations(Scanner scanner) {
+        String response = locationController.getLocations();
+        System.out.println("All saved locations");
+        System.out.println("Server response: %s".formatted(response));
     }
     private void getLocationById(Scanner scanner){
         scanner.nextLine();
@@ -62,5 +76,6 @@ public class UserInterface {
         scanner.nextLine();
         String response = locationController.getLocationById(locationId);
         System.out.println("Server response: %s".formatted(response));
+        scanner.close();
     }
 }

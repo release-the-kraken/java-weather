@@ -5,6 +5,9 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.SessionFactory;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 @RequiredArgsConstructor
 public class LocationController {
@@ -28,18 +31,8 @@ public class LocationController {
         }
     }
 
-    private LocationDTO mapToLocationDTO(Location location) {
-        return LocationDTO.builder()
-                .id(location.getId())
-                .city(location.getCity())
-                .region(location.getRegion())
-                .country(location.getCountry())
-                .longitude(location.getLongitude())
-                .latitude(location.getLatitude())
-                .build();
-    }
-
     //GET:/locations
+
     public String getLocationById(Long id) {
         try {
             LocationDTO locationDTO = locationService.getByID(id);
@@ -49,9 +42,27 @@ public class LocationController {
         }
 
     }
-
     // GET:/locations
+
     public String getLocations() {
-        return "";
+        List<Location> locations = locationService.getAll();
+        List<LocationDTO> locationDTOs = locations
+                .stream()
+                .map(location -> mapToLocationDTO(location))
+                .toList();
+        return locationDTOs
+                .stream()
+                .map(ld -> gson.toJson(ld))
+                .collect(Collectors.joining(",", "[", "]"));
+    }
+    private LocationDTO mapToLocationDTO(Location location) {
+        return LocationDTO.builder()
+                .id(location.getId())
+                .city(location.getCity())
+                .region(location.getRegion())
+                .country(location.getCountry())
+                .longitude(location.getLongitude())
+                .latitude(location.getLatitude())
+                .build();
     }
 }
