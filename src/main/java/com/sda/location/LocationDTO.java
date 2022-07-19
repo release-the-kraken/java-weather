@@ -1,16 +1,18 @@
 package com.sda.location;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.Instant;
 
 @Data
+@Builder
 public class LocationDTO {
-    Long id;
-    String city;
-    String region;
-    String country;
-    Double longitude;
-    Double latitude;
+    private Long id;
+    private final String city;
+    private String region = "N/A";
+    private final String country;
+    private final Double longitude;
+    private final Double latitude;
 
 }
