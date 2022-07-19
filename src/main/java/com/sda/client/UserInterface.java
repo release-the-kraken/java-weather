@@ -56,7 +56,6 @@ public class UserInterface {
         System.out.println("Sending Http request: %s".formatted(request));
         String response = locationController.createLocation(request);
         System.out.println("Server response: %s".formatted(response));
-        scanner.close();
     }
 
     private String createMockRequest(String city, String region, String country, Double longitude, Double latitude) {
@@ -76,6 +75,5 @@ public class UserInterface {
         scanner.nextLine();
         String response = locationController.getLocationById(locationId);
         System.out.println("Server response: %s".formatted(response));
-        scanner.close();
     }
 }
