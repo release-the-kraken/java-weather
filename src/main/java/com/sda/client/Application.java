@@ -21,7 +21,7 @@ public class Application {
         LocationRepository locationRepository = new LocationRepository(sessionFactory);
         LocationService locationService = new LocationService(locationRepository);
         LocationController locationController = new LocationController(locationService, gson);
-        UserInterface userInterface = new UserInterface(locationController);
+        UserInterface userInterface = new UserInterface(locationController, gson);
 
         userInterface.run();
 

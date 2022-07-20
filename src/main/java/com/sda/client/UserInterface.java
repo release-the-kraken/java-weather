@@ -1,16 +1,16 @@
 package com.sda.client;
 
+import com.google.gson.Gson;
 import com.sda.location.LocationController;
 import com.sda.location.LocationDTO;
 import lombok.RequiredArgsConstructor;
 
-import java.util.HashSet;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 @RequiredArgsConstructor
 public class UserInterface {
     private final LocationController locationController;
+    private final Gson gson;
 
     public void run() {
         Scanner scanner = new Scanner(System.in);
@@ -18,6 +18,8 @@ public class UserInterface {
         System.out.println("Welcome to Weather App.\nWhat would you like to do?");
 
         while (true) {
+            System.out.println("Available locations:");
+            displayLocations();
             System.out.println(" 1. Add a location");
             System.out.println(" 2. Get location by id");
             System.out.println(" 3. Get all locations");
@@ -47,10 +49,10 @@ public class UserInterface {
         String region = scanner.nextLine();
         System.out.println("Insert country - required");
         String country = scanner.nextLine();
-        System.out.println("Insert longitude in 00,00 format- required");
-        Double longitude = scanner.nextDouble();
         System.out.println("Insert latitude 00,00 format - required");
         Double latitude = scanner.nextDouble();
+        System.out.println("Insert longitude in 00,00 format- required");
+        Double longitude = scanner.nextDouble();
         scanner.nextLine();
         String request = createMockRequest(city, region, country, longitude, latitude);
         System.out.println("Sending Http request: %s".formatted(request));
@@ -75,5 +77,11 @@ public class UserInterface {
         scanner.nextLine();
         String response = locationController.getLocationById(locationId);
         System.out.println("Server response: %s".formatted(response));
+    }
+    private void displayLocations(){
+        LocationDTO[] locations = gson.fromJson(locationController.getLocations(), LocationDTO[].class);
+        Arrays.stream(locations)
+                .map(location -> location.getCity() + ", " + location.getCountry())
+                .forEach(System.out::println);
     }
 }
