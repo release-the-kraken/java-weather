@@ -1,5 +1,7 @@
 package com.sda.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.sda.forecast.ForecastController;
 import com.sda.location.LocationController;
@@ -12,7 +14,7 @@ import java.util.*;
 public class UserInterface {
     private final LocationController locationController;
     private final ForecastController forecastController;
-    private final Gson gson;
+    private final ObjectMapper objectMapper;
 
     public void run() {
         Scanner scanner = new Scanner(System.in);
@@ -21,10 +23,15 @@ public class UserInterface {
 
         while (true) {
             System.out.println("Available locations:");
-            displayLocations();
+            try {
+                displayLocations();
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
             System.out.println("\t1. Add a location");
-            System.out.println("\t2. Get location by id");
-            System.out.println("\t3. Get all locations");
+            System.out.println("\t2. Get full location data by id");
+            System.out.println("\t3. Get full data for all locations");
+            System.out.println("\t4. Get forecast for location");
             System.out.println("\t0. Close app");
             int option = scanner.nextInt();
 
@@ -37,10 +44,29 @@ public class UserInterface {
                     break;
                 case 3:
                     getAllLocations(scanner);
+                    break;
+                case 4:
+                    createForecast(scanner);
+                    break;
                 case 0:
                     return;
             }
         }
+    }
+
+    private void createForecast(Scanner scanner) {
+        scanner.nextLine();
+        System.out.println("Insert city id");
+        Long cityId = scanner.nextLong();
+        System.out.println("Insert number of days ahead");
+        int daysAhead = scanner.nextInt();
+        String response = null;
+        try {
+            response = forecastController.getForecast(cityId, daysAhead);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("Server response: %s".formatted(response));
     }
 
     private void createLocation(Scanner scanner) {
@@ -80,8 +106,8 @@ public class UserInterface {
         String response = locationController.getLocationById(locationId);
         System.out.println("Server response: %s".formatted(response));
     }
-    private void displayLocations(){
-        LocationDTO[] locations = gson.fromJson(locationController.getLocations(), LocationDTO[].class);
+    private void displayLocations() throws JsonProcessingException {
+        LocationDTO[] locations = objectMapper.readValue(locationController.getLocations(), LocationDTO[].class);
         Arrays.stream(locations)
                 .map(location -> "Id: " + location.getId() +", " + location.getCity() + ", " + location.getCountry())
                 .forEach(System.out::println);

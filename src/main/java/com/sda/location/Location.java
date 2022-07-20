@@ -1,5 +1,6 @@
 package com.sda.location;
 
+import com.google.gson.annotations.Expose;
 import com.sda.forecast.Forecast;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +26,11 @@ public class Location {
     Double longitude;
     Double latitude;
     Instant createdDate;
-    @OneToMany(mappedBy = "city")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "location")
     Set<Forecast> forecasts = new HashSet<>();
+
+    public void addForecast(Forecast forecast) {
+        forecasts.add(forecast);
+        forecast.setLocation(this);
+    }
 }

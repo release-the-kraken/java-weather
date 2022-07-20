@@ -1,7 +1,10 @@
 package com.sda.forecast;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.sda.config.Configuration;
+import com.sda.location.Location;
 import com.sda.location.LocationController;
 import com.sda.location.LocationDTO;
 import lombok.RequiredArgsConstructor;
@@ -12,26 +15,29 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+
 import static com.sda.config.Configuration.API_KEY;
 
 @RequiredArgsConstructor
 public class ForecastService {
     private final ForecastRepository forecastRepository;
     private final LocationController locationController;
-    private final Gson gson;
-    Forecast getForecast(Long locationId, Integer day){
-        LocationDTO location = gson.fromJson(locationController.getLocationById(locationId),
-                LocationDTO.class);
-        Double longitude = location.getLongitude();
-        Double latitude = location.getLatitude();
+    private final ObjectMapper objectMapper;
+
+    Forecast getForecast(Long locationId, Integer day) throws JsonProcessingException {//getActiveForecast
+        LocationDTO locationDTO = objectMapper.readValue(locationController.getLocationById(locationId), LocationDTO.class);
+        Location location = objectMapper.readValue(locationController.getLocationById(locationId), Location.class);
+        Double longitude = locationDTO.getLongitude();
+        Double latitude = locationDTO.getLatitude();
         String weatherData = getWeatherData(latitude, longitude, day);
-        Forecast forecast = gson.fromJson(weatherData, Forecast.class);
-        Forecast savedForecast = forecastRepository.save(forecast);
+        Forecast forecast = objectMapper.readValue(weatherData, Forecast.class);//<--------
+        Forecast savedForecast = forecastRepository.save(forecast, location);
         return savedForecast;
     }
-    private String getWeatherData(Double latitude, Double longitude, Integer day){
-        URI uri = URI.create("api.openweathermap.org/data/2.5/forecast?lat=%s&lon=%s&units=metric&cnt=%s&appid=%s"
-                .formatted(latitude,longitude, day, API_KEY));
+
+    private String getWeatherData(Double latitude, Double longitude, Integer day) {
+        URI uri = URI.create("https://api.openweathermap.org/data/2.5/forecast?lat=%s&lon=%s&units=metric&cnt=%s&appid=%s"
+                .formatted(latitude, longitude, day, API_KEY));
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .GET()

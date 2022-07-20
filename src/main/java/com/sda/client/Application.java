@@ -1,6 +1,8 @@
 package com.sda.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.sda.forecast.ForecastController;
 import com.sda.forecast.ForecastRepository;
 import com.sda.forecast.ForecastService;
@@ -20,16 +22,17 @@ public class Application {
         SessionFactory sessionFactory = new MetadataSources(registry)
                 .buildMetadata()
                 .buildSessionFactory();
-        Gson gson = new Gson();
+        ObjectMapper objectMapper = new ObjectMapper();
+
         LocationRepository locationRepository = new LocationRepository(sessionFactory);
         LocationService locationService = new LocationService(locationRepository);
-        LocationController locationController = new LocationController(locationService, gson);
+        LocationController locationController = new LocationController(locationService, objectMapper);
 
         ForecastRepository forecastRepository = new ForecastRepository(sessionFactory);
-        ForecastService forecastService = new ForecastService(forecastRepository, locationController, gson);
-        ForecastController forecastController = new ForecastController(forecastService, gson);
+        ForecastService forecastService = new ForecastService(forecastRepository, locationController, objectMapper);
+        ForecastController forecastController = new ForecastController(forecastService, objectMapper);
 
-        UserInterface userInterface = new UserInterface(locationController, forecastController, gson);
+        UserInterface userInterface = new UserInterface(locationController, forecastController, objectMapper);
 
         userInterface.run();
 
