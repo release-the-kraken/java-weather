@@ -1,9 +1,7 @@
 package com.sda.forecast;
 
 import com.sda.location.Location;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -12,6 +10,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor
+
 public class Forecast {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +19,7 @@ public class Forecast {
     int humidity;
     float windSpeed;
     int pressure;
-    String windDirection;
+    int windDirection;
     @ManyToOne
     Location location;
     Instant createdDate;

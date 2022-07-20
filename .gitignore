@@ -1,4 +1,4 @@
+src/main/java/com/sda/config/Configuration.java
+hibernate.cfg.xml
 .idea
 /target
-*.iml
-hibernate.cfg.xml

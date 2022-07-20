@@ -1,6 +1,9 @@
 package com.sda.client;
 
 import com.google.gson.Gson;
+import com.sda.forecast.ForecastController;
+import com.sda.forecast.ForecastRepository;
+import com.sda.forecast.ForecastService;
 import com.sda.location.LocationController;
 import com.sda.location.LocationRepository;
 import com.sda.location.LocationService;
@@ -21,7 +24,12 @@ public class Application {
         LocationRepository locationRepository = new LocationRepository(sessionFactory);
         LocationService locationService = new LocationService(locationRepository);
         LocationController locationController = new LocationController(locationService, gson);
-        UserInterface userInterface = new UserInterface(locationController, gson);
+
+        ForecastRepository forecastRepository = new ForecastRepository(sessionFactory);
+        ForecastService forecastService = new ForecastService(forecastRepository, locationController, gson);
+        ForecastController forecastController = new ForecastController(forecastService, gson);
+
+        UserInterface userInterface = new UserInterface(locationController, forecastController, gson);
 
         userInterface.run();
 

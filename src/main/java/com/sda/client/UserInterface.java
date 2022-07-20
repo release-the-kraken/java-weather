@@ -1,6 +1,7 @@
 package com.sda.client;
 
 import com.google.gson.Gson;
+import com.sda.forecast.ForecastController;
 import com.sda.location.LocationController;
 import com.sda.location.LocationDTO;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserInterface {
     private final LocationController locationController;
+    private final ForecastController forecastController;
     private final Gson gson;
 
     public void run() {
@@ -20,10 +22,10 @@ public class UserInterface {
         while (true) {
             System.out.println("Available locations:");
             displayLocations();
-            System.out.println(" 1. Add a location");
-            System.out.println(" 2. Get location by id");
-            System.out.println(" 3. Get all locations");
-            System.out.println(" 0. Close app");
+            System.out.println("\t1. Add a location");
+            System.out.println("\t2. Get location by id");
+            System.out.println("\t3. Get all locations");
+            System.out.println("\t0. Close app");
             int option = scanner.nextInt();
 
             switch (option) {
@@ -81,7 +83,7 @@ public class UserInterface {
     private void displayLocations(){
         LocationDTO[] locations = gson.fromJson(locationController.getLocations(), LocationDTO[].class);
         Arrays.stream(locations)
-                .map(location -> location.getCity() + ", " + location.getCountry())
+                .map(location -> "Id: " + location.getId() +", " + location.getCity() + ", " + location.getCountry())
                 .forEach(System.out::println);
     }
 }
