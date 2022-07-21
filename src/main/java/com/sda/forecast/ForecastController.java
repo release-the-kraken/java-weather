@@ -2,9 +2,6 @@ package com.sda.forecast;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.sda.location.LocationController;
-import com.sda.location.LocationDTO;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -19,7 +16,7 @@ public class ForecastController {
         //TODO id / day validation
         Forecast forecast = null;//TODO zmienić na metodę findById z locationRepository
         try {
-            forecast = forecastService.getForecast(id, day);
+            forecast = forecastService.getActiveForecast(id, day);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

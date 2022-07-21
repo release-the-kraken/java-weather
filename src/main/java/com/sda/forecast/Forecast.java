@@ -18,11 +18,11 @@ public class Forecast {
     Long id;
     float temperature;
     int humidity;
-    float windSpeed;
     int pressure;
-    @ManyToOne
-    Location location;
+    float windSpeed;
     int windDirection;
     Instant createdDate;//data utworzenia encji/rekordu, pobrania prognozy
-    Instant forecastDate;//data dla której chcemy prognozę
+    Instant forecastDate;//data dla której chcemy prognozę - timestamp z ForecastClientResponseDTO
+    @ManyToOne
+    Location location;
 }
