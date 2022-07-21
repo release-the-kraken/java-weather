@@ -34,9 +34,9 @@ public class HibernateForecastRepositoryImpl implements ForecastRepository{
             Transaction transaction = session.beginTransaction();
             Forecast forecast = session
                     .createQuery("SELECT l FROM Location l " +
-                                    "JOIN FETCH l.forecasts " +
+                                    "JOIN FETCH l.forecasts f" +
                                     "WHERE id = :id" +
-                                    "ORDER BY id",
+                                    "ORDER BY f.id",
                             Forecast.class)
                     .setParameter("id", id)
                     .setMaxResults(1)
