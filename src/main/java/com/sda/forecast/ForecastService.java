@@ -6,22 +6,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sda.location.Location;
 import com.sda.location.LocationController;
 import com.sda.location.LocationDTO;
-import com.sun.xml.bind.v2.runtime.unmarshaller.XsiNilLoader;
 import lombok.RequiredArgsConstructor;
 
 import java.time.*;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 public class ForecastService {
-    private final HibernateForecastRepositoryImpl hibernateForecastRepository;
-    private final LocationController locationController;
+
+    private final HibernateForecastRepositoryImpl hibernateForecastRepository; // todo use interface type
+    private final LocationController locationController; // todo to remove (you can use LocationService or LocationRepository)
     private final ForecastHttpRequestClient httpRequestClient;
     private final ObjectMapper objectMapper;
 
     Forecast getActiveForecast(Long locationId, Integer day) throws JsonProcessingException {
+
+        // todo use locationService or locationRepository
         LocationDTO locationDTO = objectMapper.readValue(locationController.getLocationById(locationId), LocationDTO.class);
         Location location = objectMapper.readValue(locationController.getLocationById(locationId), Location.class);
+
         Double longitude = locationDTO.getLongitude();
         Double latitude = locationDTO.getLatitude();
         Long id = locationDTO.getId();
@@ -35,31 +37,68 @@ public class ForecastService {
         //check if Period between created date and LocalDate.now() is < 24h
         //IF IS return queried forecast
         //ELSE fetch forecast from openweather
-        Optional<Forecast> forecastOptional = hibernateForecastRepository.getLastForecastForLocation(id);
-        String weatherData = "";
-        if(forecastOptional.isEmpty()){
-            weatherData = httpRequestClient.getWeatherData(latitude, longitude);
-        }else {
-            LocalDate forecastDate = LocalDate.ofInstant(forecastOptional.get().getCreatedDate(), ZoneOffset.ofHours(2));
-            LocalDate currentDate = LocalDate.now();
-            Period period = Period.between(currentDate, forecastDate);
-            int diff = Math.abs(period.getDays());
-            if(forecastDate.isBefore(currentDate)){
-                weatherData = httpRequestClient.getWeatherData(latitude, longitude);
-            }else if(diff < 24){
-                return forecastOptional.get();
-            }else{
-                weatherData = httpRequestClient.getWeatherData(latitude, longitude);
-            }
+
+        /**
+         Optional<Forecast> forecastOptional = hibernateForecastRepository.getLastForecastForLocation(id);
+
+         String weatherData = "";
+         if (forecastOptional.isEmpty()) {
+         weatherData = httpRequestClient.getWeatherData(latitude, longitude);
+         } else {
+         LocalDate forecastDate = LocalDate.ofInstant(forecastOptional.get().getCreatedDate(), ZoneOffset.ofHours(2));
+         LocalDate currentDate = LocalDate.now();
+         Period period = Period.between(currentDate, forecastDate);
+         int diff = Math.abs(period.getDays());
+         if (forecastDate.isBefore(currentDate)) {
+         weatherData = httpRequestClient.getWeatherData(latitude, longitude);
+         } else if (diff < 24) {
+         return forecastOptional.get();
+         } else {
+         weatherData = httpRequestClient.getWeatherData(latitude, longitude);
+         }
+         }
+
+         ForecastClientResponseDTO responseDTO = objectMapper.readValue(weatherData, ForecastClientResponseDTO.class);
+
+         SingleForecast singleForecast = mapToSingleForecast(responseDTO, day);
+         Forecast forecast = mapToForecastEntity(singleForecast);
+         Forecast savedForecast = hibernateForecastRepository.save(forecast, location);
+
+         */
+
+        return hibernateForecastRepository.getLastForecastForLocation(id)
+                .filter(this::filterActiveForecast)
+                .orElseGet(() -> getForecastAndSave(day, location, longitude, latitude));
+    }
+
+    private boolean filterActiveForecast(Forecast forecast) {
+        LocalDate forecastDate = LocalDate.ofInstant(forecast.getCreatedDate(), ZoneOffset.ofHours(2));
+        LocalDate currentDate = LocalDate.now();
+        Period period = Period.between(currentDate, forecastDate);
+        int diff = Math.abs(period.getDays());
+
+        if (forecastDate.isBefore(currentDate)) {
+            return false;
+        } else if (diff < 24) {
+            return true;
+        } else {
+            return false;
         }
+    }
 
-        ForecastClientResponseDTO responseDTO = objectMapper.readValue(weatherData, ForecastClientResponseDTO.class);
-
-        SingleForecast singleForecast = mapToSingleForecast(responseDTO, day);
-        Forecast forecast = mapToForecastEntity(singleForecast);
-        Forecast savedForecast = hibernateForecastRepository.save(forecast, location);
-
-        return savedForecast;
+    private Forecast getForecastAndSave(Integer day, Location location, Double longitude, Double latitude) {
+        try {
+            String weatherData = httpRequestClient.getWeatherData(latitude, longitude);
+            ForecastClientResponseDTO responseDTO = null;
+            responseDTO = objectMapper.readValue(weatherData, ForecastClientResponseDTO.class);
+            SingleForecast singleForecast = mapToSingleForecast(responseDTO, day);
+            Forecast newForecast = mapToForecastEntity(singleForecast);
+            Forecast savedForecast = hibernateForecastRepository.save(newForecast, location);
+            return savedForecast;
+        } catch (JsonProcessingException e) {
+            // todo
+            throw new RuntimeException();
+        }
     }
 
     private SingleForecast mapToSingleForecast(ForecastClientResponseDTO responseDTO, Integer day) {
@@ -73,6 +112,7 @@ public class ForecastService {
         single.setTimestamp(forecastForDay.getTimestamp());
         return single;
     }
+
     private Forecast mapToForecastEntity(SingleForecast single) {
         Forecast forecast = new Forecast();
         forecast.setTemperature(single.getTemperature().getDaysTemperature());

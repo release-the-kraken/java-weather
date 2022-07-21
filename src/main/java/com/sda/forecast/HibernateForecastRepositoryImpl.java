@@ -6,11 +6,13 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-public class HibernateForecastRepositoryImpl implements ForecastRepository{
+public class HibernateForecastRepositoryImpl implements ForecastRepository {
     private final SessionFactory sessionFactory;
+
     @Override
     public Forecast save(Forecast forecast, Location location) {
         Session session = sessionFactory.openSession();
@@ -29,13 +31,21 @@ public class HibernateForecastRepositoryImpl implements ForecastRepository{
     }
 
     Optional<Forecast> getLastForecastForLocation(Long id) {
+        LocalDate forecastDate = LocalDate.now(); // todo missing forecastDate parameter
         Session session = sessionFactory.openSession();
         try (session) {
             Transaction transaction = session.beginTransaction();
+
+            // todo you can use this:
+            //  session.createQuery("SELECT f FROM Forecast f " +
+            //      "WHERE f.location.id = id " +
+            //      "AND f.forecastDate = :forecastDate " +
+            //      "ORDER BY f.forecastDate");
+
             Forecast forecast = session
                     .createQuery("SELECT l FROM Location l " +
-                                    "JOIN FETCH l.forecasts f" +
-                                    "WHERE id = :id" +
+                                    "JOIN FETCH l.forecasts f " +
+                                    "WHERE l.id = :id " +
                                     "ORDER BY f.id",
                             Forecast.class)
                     .setParameter("id", id)
