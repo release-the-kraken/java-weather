@@ -2,15 +2,19 @@ package com.sda.forecast;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+@NoArgsConstructor
 @Data
 public class ForecastClientResponseDTO {
+
     List<DailyForecastDTO> daily;
 
+    @NoArgsConstructor
     @Data
-    public class DailyForecastDTO {
+    public static class DailyForecastDTO {
         @JsonProperty("dt")
         long timestamp;
         @JsonProperty("temp")
@@ -22,6 +26,7 @@ public class ForecastClientResponseDTO {
         @JsonProperty("wind_deg")
         int windDirection;
 
+        @NoArgsConstructor
         @Data
         public class TemperatureDTO {
             @JsonProperty("day")

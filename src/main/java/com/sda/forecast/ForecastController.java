@@ -13,7 +13,13 @@ public class ForecastController {
     //GET:/forecast?location{id}&date={day}
     //GET:/forecast?location{id}
     public String getForecast(Long id, Integer day) throws JsonProcessingException {
-        //TODO id / day validation
+        if (day <= 0 && day > 7) {
+            throw new IllegalArgumentException("Day must be in 1 - 7 range");
+        }
+        if (day == null) {
+            day = 1;
+        }
+
         Forecast forecast = null;//TODO zmienić na metodę findById z locationRepository
         try {
             forecast = forecastService.getActiveForecast(id, day);

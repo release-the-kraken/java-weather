@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sda.location.Location;
 import com.sda.location.LocationController;
 import com.sda.location.LocationDTO;
+import com.sun.xml.bind.v2.runtime.unmarshaller.XsiNilLoader;
 import lombok.RequiredArgsConstructor;
 
 import java.time.*;
@@ -13,19 +14,12 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 public class ForecastService {
-    private final ForecastRepository forecastRepository;
+    private final HibernateForecastRepositoryImpl hibernateForecastRepository;
     private final LocationController locationController;
     private final ForecastHttpRequestClient httpRequestClient;
     private final ObjectMapper objectMapper;
 
-    Forecast getForecast(Long locationId, Integer day) throws JsonProcessingException {
-        if (day <= 0 && day > 7) {
-            throw new IllegalArgumentException("Day must be in 1 - 7 range");
-        }
-        if (day == null) {
-            day = 1;
-        }
-
+    Forecast getActiveForecast(Long locationId, Integer day) throws JsonProcessingException {
         LocationDTO locationDTO = objectMapper.readValue(locationController.getLocationById(locationId), LocationDTO.class);
         Location location = objectMapper.readValue(locationController.getLocationById(locationId), Location.class);
         Double longitude = locationDTO.getLongitude();
@@ -41,7 +35,7 @@ public class ForecastService {
         //check if Period between created date and LocalDate.now() is < 24h
         //IF IS return queried forecast
         //ELSE fetch forecast from openweather
-        Optional<Forecast> forecastOptional = forecastRepository.getLastForecastForLocation(city);
+        Optional<Forecast> forecastOptional = hibernateForecastRepository.getLastForecastForLocation(city);
         String weatherData = "";
         if(forecastOptional.isEmpty()){
             weatherData = httpRequestClient.getWeatherData(latitude, longitude);
@@ -60,21 +54,33 @@ public class ForecastService {
         }
 
         ForecastClientResponseDTO responseDTO = objectMapper.readValue(weatherData, ForecastClientResponseDTO.class);
-        Forecast forecast = mapToForecastEntity(responseDTO, day);
-        Forecast savedForecast = forecastRepository.save(forecast, location);
+
+        SingleForecast singleForecast = mapToSingleForecast(responseDTO, day);
+        Forecast forecast = mapToForecastEntity(singleForecast);
+        Forecast savedForecast = hibernateForecastRepository.save(forecast, location);
 
         return savedForecast;
     }
 
-    private Forecast mapToForecastEntity(ForecastClientResponseDTO responseDTO, Integer day) {
+    private SingleForecast mapToSingleForecast(ForecastClientResponseDTO responseDTO, Integer day) {
         ForecastClientResponseDTO.DailyForecastDTO forecastForDay = responseDTO.getDaily().get(day);
+        SingleForecast single = new SingleForecast();
+        single.getTemperature().setDaysTemperature(forecastForDay.getTemperature().getDaysTemperature());
+        single.setHumidity(forecastForDay.getHumidity());
+        single.setPressure(forecastForDay.getPressure());
+        single.setWindSpeed(forecastForDay.getWindSpeed());
+        single.setWindDirection(forecastForDay.getWindDirection());
+        single.setTimestamp(forecastForDay.getTimestamp());
+        return single;
+    }
+    private Forecast mapToForecastEntity(SingleForecast single) {
         Forecast forecast = new Forecast();
-        forecast.setTemperature(forecastForDay.getTemperature().getDaysTemperature());
-        forecast.setHumidity(forecastForDay.getHumidity());
-        forecast.setPressure(forecastForDay.getPressure());
-        forecast.setWindSpeed(forecastForDay.getWindSpeed());
-        forecast.setWindDirection(forecastForDay.getWindDirection());
-        forecast.setForecastDate(Instant.ofEpochSecond(forecastForDay.getTimestamp()));
+        forecast.setTemperature(single.getTemperature().getDaysTemperature());
+        forecast.setHumidity(single.getHumidity());
+        forecast.setPressure(single.getPressure());
+        forecast.setWindSpeed(single.getWindSpeed());
+        forecast.setWindDirection(single.getWindDirection());
+        forecast.setForecastDate(Instant.ofEpochSecond(single.getTimestamp()));
         forecast.setCreatedDate(LocalDateTime.now().toInstant(ZoneOffset.ofHours(2)));
         return forecast;
     }
