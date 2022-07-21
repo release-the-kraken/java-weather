@@ -3,6 +3,7 @@ package com.sda.location;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +37,7 @@ public class LocationService {
         location.setCountry(country);
         location.setLongitude(longitude);
         location.setLatitude(latitude);
-        location.setCreatedDate(LocalDateTime.now().toInstant(ZoneOffset.ofHours(2)));
+        location.setCreatedDate(LocalDateTime.now().toInstant(ZoneOffset.ofHours(2)));//todo  change hours to timezone code
         Location savedLocation = locationRepository.save(location);
         return savedLocation;
     }

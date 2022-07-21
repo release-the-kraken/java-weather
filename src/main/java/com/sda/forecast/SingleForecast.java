@@ -8,7 +8,7 @@ public class SingleForecast {
     @JsonProperty("dt")
     long timestamp;
     @JsonProperty("temp")
-    Temperature temperature;
+    float temperature;
     int humidity;
     int pressure;
     @JsonProperty("wind_speed")
@@ -16,10 +16,10 @@ public class SingleForecast {
     @JsonProperty("wind_deg")
     int windDirection;
 
-    @NoArgsConstructor
+    /*@NoArgsConstructor
     @Data
     public class Temperature {
         @JsonProperty("day")
         float daysTemperature;
-    }
+    }*/
 }

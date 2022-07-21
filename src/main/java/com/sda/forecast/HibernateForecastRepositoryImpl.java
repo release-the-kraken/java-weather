@@ -16,15 +16,13 @@ public class HibernateForecastRepositoryImpl implements ForecastRepository {
     @Override
     public Forecast save(Forecast forecast, Location location) {
         Session session = sessionFactory.openSession();
-        try (session) {
-            Transaction transaction = session.beginTransaction();
+        Transaction transaction = session.beginTransaction();
+        try {
             location.addForecast(forecast);
-            session.persist(location);
+            session.persist(forecast);
             transaction.commit();
             return forecast;
         } catch (Exception e) {
-            session.getTransaction()
-                    .rollback();
             System.out.println("Database operation failed. Error message: %s".formatted(e.getMessage()));
             return null;
         }
@@ -33,8 +31,8 @@ public class HibernateForecastRepositoryImpl implements ForecastRepository {
     Optional<Forecast> getLastForecastForLocation(Long id) {
         LocalDate forecastDate = LocalDate.now(); // todo missing forecastDate parameter
         Session session = sessionFactory.openSession();
-        try (session) {
-            Transaction transaction = session.beginTransaction();
+        Transaction transaction = session.beginTransaction();
+        try {
 
             // todo you can use this:
             //  session.createQuery("SELECT f FROM Forecast f " +
@@ -43,25 +41,18 @@ public class HibernateForecastRepositoryImpl implements ForecastRepository {
             //      "ORDER BY f.forecastDate");
 
             Forecast forecast = session
-                    .createQuery("SELECT l FROM Location l " +
-                                    "JOIN FETCH l.forecasts f " +
-                                    "WHERE l.id = :id " +
-                                    "ORDER BY f.id",
+                    .createQuery("SELECT f FROM Forecast f WHERE f.location.id = :id ORDER BY f.forecastDate",
                             Forecast.class)
                     .setParameter("id", id)
                     .setMaxResults(1)
                     .getSingleResult();
-/*            Forecast forecast = session.find(Location.class, city)
-                    .getForecasts()
-                    .stream()
-                    .findFirst()
-                    .orElse(null);*/
+
             transaction.commit();
+            session.close();
             return Optional.ofNullable(forecast);
         } catch (Exception e) {
-            session.getTransaction()
-                    .rollback();
             System.out.println("Database operation failed. Error message: %s".formatted(e.getMessage()));
+
             return Optional.empty();
         }
     }

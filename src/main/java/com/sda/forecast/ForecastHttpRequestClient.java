@@ -18,6 +18,7 @@ public class ForecastHttpRequestClient {
                     .GET()
                     .uri(uri)
                     .build();
+            System.out.println(client.send(request, HttpResponse.BodyHandlers.ofString()).body());
             return client.send(request, HttpResponse.BodyHandlers.ofString()).body();
         } catch (IOException e) {
             throw new RuntimeException(e);

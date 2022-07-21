@@ -9,6 +9,7 @@ import com.sda.location.LocationDTO;
 import lombok.RequiredArgsConstructor;
 
 import java.time.*;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class ForecastService {
@@ -27,48 +28,44 @@ public class ForecastService {
         Double longitude = locationDTO.getLongitude();
         Double latitude = locationDTO.getLatitude();
         Long id = locationDTO.getId();
-        //GET LAST FORECAST FOR LOCATION FROM DATABASE
-        //QUERY --> "SELECT f FROM Forecast f LEFT JOIN FETCH l.forecasts WHERE city=:city ORDER BY createdDate DESC LIMIT 1"
-        //check if forecast exists
-        //IF NOT fetch forecast from openweather
-        //check if forecastDate is after LocalDateTime.now()
-        //IF NOT get weather data from openweather
-        //ELSE get createdDate from queried forecast
-        //check if Period between created date and LocalDate.now() is < 24h
-        //IF IS return queried forecast
-        //ELSE fetch forecast from openweather
 
-        /**
-         Optional<Forecast> forecastOptional = hibernateForecastRepository.getLastForecastForLocation(id);
+        Optional<Forecast> forecastOptional = hibernateForecastRepository.getLastForecastForLocation(id);
 
-         String weatherData = "";
-         if (forecastOptional.isEmpty()) {
-         weatherData = httpRequestClient.getWeatherData(latitude, longitude);
-         } else {
-         LocalDate forecastDate = LocalDate.ofInstant(forecastOptional.get().getCreatedDate(), ZoneOffset.ofHours(2));
-         LocalDate currentDate = LocalDate.now();
-         Period period = Period.between(currentDate, forecastDate);
-         int diff = Math.abs(period.getDays());
-         if (forecastDate.isBefore(currentDate)) {
-         weatherData = httpRequestClient.getWeatherData(latitude, longitude);
-         } else if (diff < 24) {
-         return forecastOptional.get();
-         } else {
-         weatherData = httpRequestClient.getWeatherData(latitude, longitude);
-         }
-         }
+        String weatherData = "";
+        if (forecastOptional.isEmpty()) {
+            weatherData = httpRequestClient.getWeatherData(latitude, longitude);
+            ForecastClientResponseDTO responseDTO = objectMapper.readValue(weatherData, ForecastClientResponseDTO.class);
+            SingleForecast singleForecast = mapToSingleForecast(responseDTO, day);
+            Forecast forecast = mapToForecastEntity(singleForecast);
+            return hibernateForecastRepository.save(forecast, location);
+        } else {
+            LocalDate forecastDate = LocalDate.ofInstant(forecastOptional.get().getCreatedDate(), ZoneOffset.ofHours(2));
+            LocalDate currentDate = LocalDate.now();
+            Period period = Period.between(currentDate, forecastDate);
+            int diff = Math.abs(period.getDays());
+            if (forecastDate.isBefore(currentDate)) {
+                weatherData = httpRequestClient.getWeatherData(latitude, longitude);
+                ForecastClientResponseDTO responseDTO = objectMapper.readValue(weatherData, ForecastClientResponseDTO.class);
+                SingleForecast singleForecast = mapToSingleForecast(responseDTO, day);
+                Forecast forecast = mapToForecastEntity(singleForecast);
+                return hibernateForecastRepository.save(forecast, location);
+            } else if (diff < 24) {
+                return forecastOptional.get();
+            } else {
+                weatherData = httpRequestClient.getWeatherData(latitude, longitude);
+                ForecastClientResponseDTO responseDTO = objectMapper.readValue(weatherData, ForecastClientResponseDTO.class);
+                SingleForecast singleForecast = mapToSingleForecast(responseDTO, day);
+                Forecast forecast = mapToForecastEntity(singleForecast);
+                return hibernateForecastRepository.save(forecast, location);
+            }
+        }
 
-         ForecastClientResponseDTO responseDTO = objectMapper.readValue(weatherData, ForecastClientResponseDTO.class);
 
-         SingleForecast singleForecast = mapToSingleForecast(responseDTO, day);
-         Forecast forecast = mapToForecastEntity(singleForecast);
-         Forecast savedForecast = hibernateForecastRepository.save(forecast, location);
 
-         */
 
-        return hibernateForecastRepository.getLastForecastForLocation(id)
-                .filter(this::filterActiveForecast)
-                .orElseGet(() -> getForecastAndSave(day, location, longitude, latitude));
+//        return hibernateForecastRepository.getLastForecastForLocation(id)
+//                .filter(this::filterActiveForecast)
+//                .orElseGet(() -> getForecastAndSave(day, location, longitude, latitude));
     }
 
     private boolean filterActiveForecast(Forecast forecast) {
@@ -89,12 +86,10 @@ public class ForecastService {
     private Forecast getForecastAndSave(Integer day, Location location, Double longitude, Double latitude) {
         try {
             String weatherData = httpRequestClient.getWeatherData(latitude, longitude);
-            ForecastClientResponseDTO responseDTO = null;
-            responseDTO = objectMapper.readValue(weatherData, ForecastClientResponseDTO.class);
+            ForecastClientResponseDTO responseDTO = objectMapper.readValue(weatherData, ForecastClientResponseDTO.class);
             SingleForecast singleForecast = mapToSingleForecast(responseDTO, day);
             Forecast newForecast = mapToForecastEntity(singleForecast);
-            Forecast savedForecast = hibernateForecastRepository.save(newForecast, location);
-            return savedForecast;
+            return hibernateForecastRepository.save(newForecast, location);
         } catch (JsonProcessingException e) {
             // todo
             throw new RuntimeException();
@@ -104,7 +99,7 @@ public class ForecastService {
     private SingleForecast mapToSingleForecast(ForecastClientResponseDTO responseDTO, Integer day) {
         ForecastClientResponseDTO.DailyForecastDTO forecastForDay = responseDTO.getDaily().get(day);
         SingleForecast single = new SingleForecast();
-        single.getTemperature().setDaysTemperature(forecastForDay.getTemperature().getDaysTemperature());
+        single.setTemperature(forecastForDay.getTemperature().getDaysTemperature());
         single.setHumidity(forecastForDay.getHumidity());
         single.setPressure(forecastForDay.getPressure());
         single.setWindSpeed(forecastForDay.getWindSpeed());
@@ -115,7 +110,7 @@ public class ForecastService {
 
     private Forecast mapToForecastEntity(SingleForecast single) {
         Forecast forecast = new Forecast();
-        forecast.setTemperature(single.getTemperature().getDaysTemperature());
+        forecast.setTemperature(single.getTemperature());
         forecast.setHumidity(single.getHumidity());
         forecast.setPressure(single.getPressure());
         forecast.setWindSpeed(single.getWindSpeed());
