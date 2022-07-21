@@ -24,7 +24,7 @@ public class ForecastController {
         try {
             forecast = forecastService.getActiveForecast(id, day);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            System.out.println("Database operation failed. Error message: %s".formatted(e.getMessage()));
         }
         ForecastDTO response = mapForecastToForecastDTO(forecast);
         return objectMapper.writeValueAsString(response);

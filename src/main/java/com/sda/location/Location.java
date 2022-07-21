@@ -1,12 +1,11 @@
 package com.sda.location;
 
-import com.google.gson.annotations.Expose;
+
 import com.sda.forecast.Forecast;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import org.hibernate.annotations.OrderBy;
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.HashSet;
@@ -27,6 +26,7 @@ public class Location {
     Double latitude;
     Instant createdDate;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "location")
+    @OrderBy(clause = "createdDate DESC")
     Set<Forecast> forecasts = new HashSet<>();
 
     public void addForecast(Forecast forecast) {

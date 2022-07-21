@@ -24,7 +24,7 @@ public class ForecastService {
         Location location = objectMapper.readValue(locationController.getLocationById(locationId), Location.class);
         Double longitude = locationDTO.getLongitude();
         Double latitude = locationDTO.getLatitude();
-        String city = location.getCity();
+        Long id = locationDTO.getId();
         //GET LAST FORECAST FOR LOCATION FROM DATABASE
         //QUERY --> "SELECT f FROM Forecast f LEFT JOIN FETCH l.forecasts WHERE city=:city ORDER BY createdDate DESC LIMIT 1"
         //check if forecast exists
@@ -35,7 +35,7 @@ public class ForecastService {
         //check if Period between created date and LocalDate.now() is < 24h
         //IF IS return queried forecast
         //ELSE fetch forecast from openweather
-        Optional<Forecast> forecastOptional = hibernateForecastRepository.getLastForecastForLocation(city);
+        Optional<Forecast> forecastOptional = hibernateForecastRepository.getLastForecastForLocation(id);
         String weatherData = "";
         if(forecastOptional.isEmpty()){
             weatherData = httpRequestClient.getWeatherData(latitude, longitude);

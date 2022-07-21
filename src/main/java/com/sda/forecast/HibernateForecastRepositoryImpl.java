@@ -16,7 +16,6 @@ public class HibernateForecastRepositoryImpl implements ForecastRepository{
         Session session = sessionFactory.openSession();
         try (session) {
             Transaction transaction = session.beginTransaction();
-            //forecast.setCreatedDate(LocalDateTime.now().toInstant(ZoneOffset.ofHours(2)));
             location.addForecast(forecast);
             session.persist(location);
             transaction.commit();
@@ -29,18 +28,24 @@ public class HibernateForecastRepositoryImpl implements ForecastRepository{
         }
     }
 
-    Optional<Forecast> getLastForecastForLocation(String city) {
+    Optional<Forecast> getLastForecastForLocation(Long id) {
         Session session = sessionFactory.openSession();
         try (session) {
             Transaction transaction = session.beginTransaction();
             Forecast forecast = session
-                    .createQuery("SELECT f FROM Forecast f " +
-                                    "LEFT JOIN FETCH l.forecasts " +
-                                    "WHERE city=:city " +
-                                    "ORDER BY f.createdDate DESC LIMIT 1",
+                    .createQuery("SELECT l FROM Location l " +
+                                    "JOIN FETCH l.forecasts " +
+                                    "WHERE id = :id" +
+                                    "ORDER BY id",
                             Forecast.class)
-                    .setParameter("city", city)
+                    .setParameter("id", id)
+                    .setMaxResults(1)
                     .getSingleResult();
+/*            Forecast forecast = session.find(Location.class, city)
+                    .getForecasts()
+                    .stream()
+                    .findFirst()
+                    .orElse(null);*/
             transaction.commit();
             return Optional.ofNullable(forecast);
         } catch (Exception e) {
