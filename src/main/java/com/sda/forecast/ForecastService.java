@@ -3,9 +3,7 @@ package com.sda.forecast;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.sda.location.Location;
-import com.sda.location.LocationController;
-import com.sda.location.LocationDTO;
+import com.sda.location.*;
 import lombok.RequiredArgsConstructor;
 
 import java.time.*;
@@ -14,17 +12,16 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ForecastService {
 
-    private final HibernateForecastRepositoryImpl hibernateForecastRepository; // todo use interface type
-    private final LocationController locationController; // todo to remove (you can use LocationService or LocationRepository)
+    private final ForecastRepository hibernateForecastRepository;
+    private final LocationService locationService;
+    private final LocationRepository locationRepository;
     private final ForecastHttpRequestClient httpRequestClient;
     private final ObjectMapper objectMapper;
 
     Forecast getActiveForecast(Long locationId, Integer day) throws JsonProcessingException {
 
-        // todo use locationService or locationRepository
-        LocationDTO locationDTO = objectMapper.readValue(locationController.getLocationById(locationId), LocationDTO.class);
-        Location location = objectMapper.readValue(locationController.getLocationById(locationId), Location.class);
-
+        LocationDTO locationDTO = locationService.getByID(locationId);
+        Optional<Location> location = locationRepository.findById(locationId);
         Double longitude = locationDTO.getLongitude();
         Double latitude = locationDTO.getLatitude();
         Long id = locationDTO.getId();
@@ -60,9 +57,6 @@ public class ForecastService {
             }
         }
 
-
-
-
 //        return hibernateForecastRepository.getLastForecastForLocation(id)
 //                .filter(this::filterActiveForecast)
 //                .orElseGet(() -> getForecastAndSave(day, location, longitude, latitude));
@@ -83,7 +77,7 @@ public class ForecastService {
         }
     }
 
-    private Forecast getForecastAndSave(Integer day, Location location, Double longitude, Double latitude) {
+    private Forecast getForecastAndSave(Integer day, Optional<Location> location, Double longitude, Double latitude) {
         try {
             String weatherData = httpRequestClient.getWeatherData(latitude, longitude);
             ForecastClientResponseDTO responseDTO = objectMapper.readValue(weatherData, ForecastClientResponseDTO.class);
@@ -116,7 +110,9 @@ public class ForecastService {
         forecast.setWindSpeed(single.getWindSpeed());
         forecast.setWindDirection(single.getWindDirection());
         forecast.setForecastDate(Instant.ofEpochSecond(single.getTimestamp()));
-        forecast.setCreatedDate(LocalDateTime.now().toInstant(ZoneOffset.ofHours(2)));
+        ZoneId zoneId = ZoneId.of("Europe/Warsaw");
+        ZoneOffset zoneOffset = zoneId.getRules().getOffset(LocalDateTime.now());
+        forecast.setCreatedDate(LocalDateTime.now().toInstant(zoneOffset));
         return forecast;
     }
 

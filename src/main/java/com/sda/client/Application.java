@@ -27,7 +27,7 @@ public class Application {
 
         ForecastHttpRequestClient forecastHttpRequestClient = new ForecastHttpRequestClient();
         HibernateForecastRepositoryImpl hibernateForecastRepository = new HibernateForecastRepositoryImpl(sessionFactory);
-        ForecastService forecastService = new ForecastService(hibernateForecastRepository, locationController, forecastHttpRequestClient, objectMapper);
+        ForecastService forecastService = new ForecastService(hibernateForecastRepository, locationService, locationRepository, forecastHttpRequestClient, objectMapper);
         ForecastController forecastController = new ForecastController(forecastService, objectMapper);
 
         UserInterface userInterface = new UserInterface(locationController, forecastController, objectMapper);

@@ -14,11 +14,12 @@ public class HibernateForecastRepositoryImpl implements ForecastRepository {
     private final SessionFactory sessionFactory;
 
     @Override
-    public Forecast save(Forecast forecast, Location location) {
+    public Forecast save(Forecast forecast, Optional<Location> location) {
         Session session = sessionFactory.openSession();
         Transaction transaction = session.beginTransaction();
+        Location loc = location.get();//todo handle optional better
         try {
-            location.addForecast(forecast);
+            loc.addForecast(forecast);
             session.persist(forecast);
             transaction.commit();
             return forecast;
@@ -27,21 +28,16 @@ public class HibernateForecastRepositoryImpl implements ForecastRepository {
             return null;
         }
     }
-
-    Optional<Forecast> getLastForecastForLocation(Long id) {
-        LocalDate forecastDate = LocalDate.now(); // todo missing forecastDate parameter
+    @Override
+    public Optional<Forecast> getLastForecastForLocation(Long id) {
+        LocalDate requiredForecastDate = LocalDate.now(); // todo missing forecastDate parameter, check where it appears and add number of days passed by user
         Session session = sessionFactory.openSession();
         Transaction transaction = session.beginTransaction();
         try {
-
-            // todo you can use this:
-            //  session.createQuery("SELECT f FROM Forecast f " +
-            //      "WHERE f.location.id = id " +
-            //      "AND f.forecastDate = :forecastDate " +
-            //      "ORDER BY f.forecastDate");
-
             Forecast forecast = session
-                    .createQuery("SELECT f FROM Forecast f WHERE f.location.id = :id ORDER BY f.forecastDate",
+                    .createQuery("SELECT f FROM Forecast f " +
+                                    "WHERE f.location.id = :id " + //todo add forecast date to query
+                                    "ORDER BY f.forecastDate",
                             Forecast.class)
                     .setParameter("id", id)
                     .setMaxResults(1)

@@ -3,7 +3,9 @@ package com.sda.forecast;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 public class ForecastController {
 
@@ -13,21 +15,19 @@ public class ForecastController {
     //GET:/forecast?location{id}&date={day}
     //GET:/forecast?location{id}
     public String getForecast(Long id, Integer day) throws JsonProcessingException {
-        if (day <= 0 && day > 7) { // todo null check (it may throw NPE)
-            throw new IllegalArgumentException("Day must be in 1 - 7 range");
-        }
         if (day == null) {
             day = 1;
         }
+        if (day <= 0 && day > 7) {
+            throw new IllegalArgumentException("Day must be in 1 - 7 range");
+        }
 
-        // Forecast forecast = null; // todo to remove
         try {
             Forecast forecast = forecastService.getActiveForecast(id, day);
             ForecastDTO response = mapForecastToForecastDTO(forecast);
             return objectMapper.writeValueAsString(response);
         } catch (JsonProcessingException e) {
-            System.out.println("Database operation failed. Error message: %s".formatted(e.getMessage()));
-            return "error-message"; // todo you can construct error massage in the JSON format
+            return "{\"error_message\":\"%s\"}".formatted(e.getMessage());
         }
     }
 

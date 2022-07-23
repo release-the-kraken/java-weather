@@ -37,11 +37,13 @@ public class LocationService {
         location.setCountry(country);
         location.setLongitude(longitude);
         location.setLatitude(latitude);
-        location.setCreatedDate(LocalDateTime.now().toInstant(ZoneOffset.ofHours(2)));//todo  change hours to timezone code
+        ZoneId zoneId = ZoneId.of("Europe/Warsaw");
+        ZoneOffset zoneOffset = zoneId.getRules().getOffset(LocalDateTime.now());
+        location.setCreatedDate(LocalDateTime.now().toInstant(zoneOffset));
         Location savedLocation = locationRepository.save(location);
         return savedLocation;
     }
-    LocationDTO getByID(Long id){
+    public LocationDTO getByID(Long id){
         Optional<Location> locationOptional = locationRepository.findById(id);
         Location location = locationOptional
                 .orElseThrow(() -> new IllegalArgumentException("No entry with id %s.".formatted(id)));
