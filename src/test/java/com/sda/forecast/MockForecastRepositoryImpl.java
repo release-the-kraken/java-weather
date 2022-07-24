@@ -2,6 +2,7 @@ package com.sda.forecast;
 
 import com.sda.location.Location;
 
+import java.time.Instant;
 import java.util.Optional;
 
 public class MockForecastRepositoryImpl implements ForecastRepository {
@@ -13,7 +14,7 @@ public class MockForecastRepositoryImpl implements ForecastRepository {
     }
 
     @Override
-    public Optional<Forecast> getLastForecastForLocation(Long id) {
+    public Optional<Forecast> getLastForecastForLocation(Long id, int days) {
         return Optional.empty();
     }
 }

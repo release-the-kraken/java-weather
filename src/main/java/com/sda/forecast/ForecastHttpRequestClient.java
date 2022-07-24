@@ -8,8 +8,8 @@ import java.net.http.HttpResponse;
 
 import static com.sda.config.Configuration.API_KEY;
 
-public class ForecastHttpRequestClient {
-    String getWeatherData(Double latitude, Double longitude) {
+public class ForecastHttpRequestClient implements HttpRequestClient{
+    public String getWeatherData(Double latitude, Double longitude) {
         try {
             URI uri = URI.create("https://api.openweathermap.org/data/2.5/onecall?lat=%s&lon=%s&units=metric&exclude=current,hourly,minutely&appid=%s"
                     .formatted(latitude, longitude, API_KEY));

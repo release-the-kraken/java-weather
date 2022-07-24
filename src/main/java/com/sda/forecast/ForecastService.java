@@ -29,10 +29,9 @@ public class ForecastService {
         Double latitude = locationDTO.getLatitude();
         Long id = locationDTO.getId();
 
-        Optional<Forecast> forecastOptional = hibernateForecastRepository.getLastForecastForLocation(id);
+        Optional<Forecast> forecastOptional = hibernateForecastRepository.getLastForecastForLocation(id, day);
 
         return forecastOptional
-                .filter(forecast -> filterActiveForecasts(forecast))
                 .orElseGet(() -> getForecastAndSave(day, location, longitude, latitude));
     }
 
@@ -50,19 +49,6 @@ public class ForecastService {
         }
     }
 
-    private boolean filterActiveForecasts(Forecast forecast) {
-        zoneId = ZoneId.of("Europe/Warsaw");
-        zoneOffset = zoneId.getRules().getOffset(LocalDateTime.now());
-        LocalDateTime forecastDate = LocalDateTime.ofInstant(forecast.getCreatedDate(), zoneOffset);
-        LocalDateTime currentDate = LocalDateTime.now();
-        Duration duration = Duration.between(currentDate, forecastDate);
-        long diff = duration.toHours();
-        if ((diff < 24 && !duration.isNegative())) {
-            return true;
-        } else {
-            return false;
-        }
-    }
     private SingleForecast mapToSingleForecast(ForecastClientResponseDTO responseDTO, Integer day) {
         ForecastClientResponseDTO.DailyForecastDTO forecastForDay = responseDTO.getDaily().get(day);
         SingleForecast single = new SingleForecast();
