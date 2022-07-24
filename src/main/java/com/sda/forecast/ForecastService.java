@@ -11,6 +11,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 public class ForecastService {
+
     private ZoneId zoneId;
     private ZoneOffset zoneOffset;
     private final ForecastRepository hibernateForecastRepository;

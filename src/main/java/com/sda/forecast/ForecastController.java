@@ -44,4 +44,5 @@ public class ForecastController {
                 .pressure(forecast.getPressure())
                 .build();
     }
+
 }

@@ -1,5 +1,6 @@
 package com.sda.forecast;
 
+
 import java.util.Arrays;
 
 public enum WindDirection {
@@ -30,4 +31,5 @@ public enum WindDirection {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Degrees must be between 0 and 360"));
     }
+
 }
