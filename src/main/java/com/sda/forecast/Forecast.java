@@ -1,6 +1,5 @@
 package com.sda.forecast;
 
-import com.google.gson.annotations.Expose;
 import com.sda.location.Location;
 import lombok.*;
 

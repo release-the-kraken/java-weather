@@ -2,7 +2,6 @@ package com.sda.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import com.sda.forecast.ForecastController;
 import com.sda.location.LocationController;
 import com.sda.location.LocationDTO;
@@ -60,7 +59,7 @@ public class UserInterface {
         Long cityId = scanner.nextLong();
         System.out.println("Insert number of days ahead");
         int daysAhead = scanner.nextInt();
-        String response = null;
+        String response;
         try {
             response = forecastController.getForecast(cityId, daysAhead);
         } catch (JsonProcessingException e) {

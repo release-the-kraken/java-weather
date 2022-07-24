@@ -11,7 +11,7 @@ public class ForecastController {
 
     private final ForecastService forecastService;
     private final ObjectMapper objectMapper;
-
+    //simulates
     //GET:/forecast?location{id}&date={day}
     //GET:/forecast?location{id}
     public String getForecast(Long id, Integer day) throws JsonProcessingException {

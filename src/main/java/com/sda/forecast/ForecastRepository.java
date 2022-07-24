@@ -2,7 +2,6 @@ package com.sda.forecast;
 
 import com.sda.location.Location;
 
-import java.time.Instant;
 import java.util.Optional;
 
 public interface ForecastRepository {
