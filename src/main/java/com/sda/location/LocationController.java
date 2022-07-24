@@ -1,9 +1,10 @@
 package com.sda.location;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.SessionFactory;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,12 +13,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LocationController {
     private final LocationService locationService;
-    private final Gson gson;
+    private final ObjectMapper objectMapper;
 
     //POST:/locations
     public String createLocation(String json) {
         try {
-            LocationDTO locationDTO = gson.fromJson(json, LocationDTO.class);
+            LocationDTO locationDTO = objectMapper.readValue(json, LocationDTO.class);
             String city = locationDTO.getCity();
             String region = locationDTO.getRegion();
             String country = locationDTO.getCountry();
@@ -25,9 +26,13 @@ public class LocationController {
             Double latitude = locationDTO.getLatitude();
             Location location = locationService.create(city, region, country, longitude, latitude);
             LocationDTO response = mapToLocationDTO(location);
-            return gson.toJson(response);
+            return objectMapper.writeValueAsString(response);
         } catch (IllegalArgumentException e) {
             return "Error message: %s".formatted(e.getMessage());
+        } catch (JsonMappingException e) {
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -36,9 +41,11 @@ public class LocationController {
     public String getLocationById(Long id) {
         try {
             LocationDTO locationDTO = locationService.getByID(id);
-            return gson.toJson(locationDTO);
+            return objectMapper.writeValueAsString(locationDTO);
         } catch (IllegalArgumentException e) {
             return "Error message: %s".formatted(e.getMessage());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
 
     }
@@ -52,7 +59,13 @@ public class LocationController {
                 .toList();
         return locationDTOs
                 .stream()
-                .map(ld -> gson.toJson(ld))
+                .map(ld -> {
+                    try {
+                        return objectMapper.writeValueAsString(ld);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 .collect(Collectors.joining(",", "[", "]"));
     }
     private LocationDTO mapToLocationDTO(Location location) {

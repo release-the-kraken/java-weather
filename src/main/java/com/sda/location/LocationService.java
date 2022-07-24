@@ -2,17 +2,15 @@ package com.sda.location;
 
 import lombok.RequiredArgsConstructor;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
 public class LocationService {
-    private final LocationRepository locationRepository;
+    private final HibernateLocationRepositoryImpl locationRepository;
     private static final Double MIN_LATITUDE = -90.00;
     private static final Double MAX_LATITUDE = 90.00;
     private static final Double MIN_LONGITUDE = -180.00;
@@ -39,11 +37,13 @@ public class LocationService {
         location.setCountry(country);
         location.setLongitude(longitude);
         location.setLatitude(latitude);
-        location.setCreatedDate(LocalDateTime.now().toInstant(ZoneOffset.ofHours(2)));
+        ZoneId zoneId = ZoneId.of("Europe/Warsaw");
+        ZoneOffset zoneOffset = zoneId.getRules().getOffset(LocalDateTime.now());
+        location.setCreatedDate(LocalDateTime.now().toInstant(zoneOffset));
         Location savedLocation = locationRepository.save(location);
         return savedLocation;
     }
-    LocationDTO getByID(Long id){
+    public LocationDTO getByID(Long id){
         Optional<Location> locationOptional = locationRepository.findById(id);
         Location location = locationOptional
                 .orElseThrow(() -> new IllegalArgumentException("No entry with id %s.".formatted(id)));

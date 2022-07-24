@@ -1,9 +1,8 @@
 package com.sda.forecast;
 
+import com.google.gson.annotations.Expose;
 import com.sda.location.Location;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -12,17 +11,18 @@ import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor
+
 public class Forecast {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     float temperature;
     int humidity;
-    float windSpeed;
     int pressure;
-    String windDirection;
+    float windSpeed;
+    int windDirection;
+    Instant createdDate;//data utworzenia encji/rekordu, pobrania prognozy
+    Instant forecastDate;//data dla której chcemy prognozę - timestamp z ForecastClientResponseDTO
     @ManyToOne
     Location location;
-    Instant createdDate;
-    Instant forecastDate;
 }
