@@ -14,12 +14,11 @@ public class HibernateForecastRepositoryImpl implements ForecastRepository {
     private final SessionFactory sessionFactory;
 
     @Override
-    public Forecast save(Forecast forecast, Optional<Location> location) {
+    public Forecast save(Forecast forecast, Location location) {
         Session session = sessionFactory.openSession();
         Transaction transaction = session.beginTransaction();
-        Location loc = location.get();//todo handle optional better
         try {
-            loc.addForecast(forecast);
+            location.addForecast(forecast);
             session.persist(forecast);
             transaction.commit();
             return forecast;
