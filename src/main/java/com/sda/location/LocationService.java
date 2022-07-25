@@ -40,21 +40,19 @@ public class LocationService {
         ZoneId zoneId = ZoneId.of("Europe/Warsaw");
         ZoneOffset zoneOffset = zoneId.getRules().getOffset(LocalDateTime.now());
         location.setCreatedDate(LocalDateTime.now().toInstant(zoneOffset));
-        Location savedLocation = locationRepository.save(location);
-        return savedLocation;
+        return locationRepository.save(location);
     }
     public LocationDTO getByID(Long id){
         Optional<Location> locationOptional = locationRepository.findById(id);
         Location location = locationOptional
                 .orElseThrow(() -> new IllegalArgumentException("No entry with id %s.".formatted(id)));
-        LocationDTO locationDTO = LocationDTO.builder()
+        return LocationDTO.builder()
                 .id(location.getId())
                 .city(location.getCity())
                 .region(location.getRegion())
                 .longitude(location.getLongitude())
                 .latitude(location.getLatitude())
                 .build();
-        return locationDTO;
     }
     List<Location> getAll(){
         return locationRepository.findAll();

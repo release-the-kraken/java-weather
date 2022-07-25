@@ -29,7 +29,7 @@ public class HibernateForecastRepositoryImpl implements ForecastRepository {
     }
 
     @Override
-    public Optional<Forecast> getLastForecastForLocation(Long id, int days) {
+    public Optional<Forecast> getActiveForecastForRequiredLocationAndDay(Long id, int days) {
         Session session = sessionFactory.openSession();
         Transaction transaction = session.beginTransaction();
         try {
@@ -55,14 +55,14 @@ public class HibernateForecastRepositoryImpl implements ForecastRepository {
     private boolean filterActiveForecasts(int days, Forecast f) {
         ZoneId zoneId = ZoneId.of("Europe/Warsaw");
         ZoneOffset zoneOffset = zoneId.getRules().getOffset(LocalDateTime.now());
+        LocalDate requestedForecastDate = LocalDate.now().plusDays(days);
+        LocalDate forecastDate = LocalDate.ofInstant(f.getForecastDate(), zoneOffset);
+        Period period = Period.between(requestedForecastDate, forecastDate);
+        int periodDiff = period.getDays();
+        LocalDateTime requestDate = LocalDateTime.now();
         LocalDateTime forecastCreatedDate = LocalDateTime.ofInstant(f.getCreatedDate(), zoneOffset);
-        LocalDateTime userRequiredDate = LocalDateTime.now().plusDays(days);
-        Duration duration = Duration.between(userRequiredDate, forecastCreatedDate);
-        long diff = duration.toHours();
-        if ((diff < 24 && !duration.isNegative())) {
-            return true;
-        } else {
-            return false;
-        }
+        Duration duration = Duration.between(requestDate, forecastCreatedDate);
+        long durationDiff = duration.toHours();
+        return periodDiff == 0 && durationDiff >= 0 && durationDiff < 24;
     }
 }

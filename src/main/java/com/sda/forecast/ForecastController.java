@@ -3,9 +3,9 @@ package com.sda.forecast;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+
+
 @RequiredArgsConstructor
 public class ForecastController {
 
@@ -18,7 +18,7 @@ public class ForecastController {
         if (day == null) {
             day = 1;
         }
-        if (day <= 0 && day > 7) {
+        if (day < 1 || day > 7) {
             throw new IllegalArgumentException("Day must be in 1 - 7 range");
         }
 

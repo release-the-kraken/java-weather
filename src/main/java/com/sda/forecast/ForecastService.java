@@ -30,7 +30,7 @@ public class ForecastService {
         Double latitude = locationDTO.getLatitude();
         Long id = locationDTO.getId();
 
-        Optional<Forecast> forecastOptional = hibernateForecastRepository.getLastForecastForLocation(id, day);
+        Optional<Forecast> forecastOptional = hibernateForecastRepository.getActiveForecastForRequiredLocationAndDay(id, day);
 
         return forecastOptional
                 .orElseGet(() -> getForecastAndSave(day, location, longitude, latitude));

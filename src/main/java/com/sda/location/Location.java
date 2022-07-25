@@ -25,7 +25,7 @@ public class Location {
     Double longitude;
     Double latitude;
     Instant createdDate;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "location")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "location")
     @OrderBy(clause = "createdDate DESC")
     Set<Forecast> forecasts = new HashSet<>();
 

@@ -6,5 +6,5 @@ import java.util.Optional;
 
 public interface ForecastRepository {
     Forecast save(Forecast forecast, Location location);
-    Optional<Forecast> getLastForecastForLocation(Long id, int days);
+    Optional<Forecast> getActiveForecastForRequiredLocationAndDay(Long id, int days);
 }
