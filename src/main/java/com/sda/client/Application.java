@@ -6,19 +6,18 @@ import com.sda.forecast.*;
 import com.sda.location.LocationController;
 import com.sda.location.HibernateLocationRepositoryImpl;
 import com.sda.location.LocationService;
+import com.sda.utils.HibernateUtils;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
+import static com.sda.utils.HibernateUtils.Instance.getSessionFactory;
+
 public class Application {
     public static void main(String[] args) {
-        StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
-                .configure()
-                .build();
-        SessionFactory sessionFactory = new MetadataSources(registry)
-                .buildMetadata()
-                .buildSessionFactory();
+
+        SessionFactory sessionFactory = getSessionFactory();
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         HibernateLocationRepositoryImpl locationRepository = new HibernateLocationRepositoryImpl(sessionFactory);

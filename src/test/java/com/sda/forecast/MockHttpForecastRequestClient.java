@@ -5,8 +5,8 @@ public class MockHttpForecastRequestClient implements HttpRequestClient {
     public String getWeatherData(Double latitude, Double longitude) {
 
         return "{\n" +
-                "  \"lat\": %s,\n" +
-                "  \"lon\": %s,\n" +
+                "  \"lat\":\"" + latitude + "\",\n" +
+                "  \"lon\":\"" + longitude + "\",\n" +
                 "  \"timezone\": \"Europe/Warsaw\",\n" +
                 "  \"timezone_offset\": 7200,\n" +
                 "  \"daily\": [\n" +
@@ -88,6 +88,6 @@ public class MockHttpForecastRequestClient implements HttpRequestClient {
                 "      \"pop\": 0.8,\n" +
                 "      \"rain\": 2.19,\n" +
                 "      \"uvi\": 6.86\n" +
-                "    },".formatted(latitude, longitude);
+                "    }]}";
     }
 }

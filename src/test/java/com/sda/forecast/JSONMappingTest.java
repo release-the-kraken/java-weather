@@ -8,13 +8,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class JSONMappingTest {
-    String json = "{\"lat\": 49, \"lon\": 22, \"daily\":[" +
-            "{\"dt\":1658397600, \"moonrise\": 0, \"temp\":{" +
-            "\"day\": 29.22," +
-            " \"night\": 19.06}," +
-            " \"pressure\": 1018, \"humidity\": 21, \"wind_speed\": 4.17, \"wind_deg\": 29,\"wind_gust\": 6.32}]}";
+class ObjectCreationFromHttpRequestTest {
+    HttpRequestClient mockHttpClient = new MockHttpForecastRequestClient();
+    String json = mockHttpClient.getWeatherData(53.3, 15.03);
     ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeAll
@@ -24,8 +23,11 @@ class JSONMappingTest {
 
     @Test
     void MappingJsonToObject_ShouldCreateForecastObject() throws JsonProcessingException {
+        //given
         ForecastClientResponseDTO responseDTO = null;
+        //when
         responseDTO = objectMapper.readValue(json, ForecastClientResponseDTO.class);
-
+        //then
+        assertThat(responseDTO).isNotNull();
     }
 }
