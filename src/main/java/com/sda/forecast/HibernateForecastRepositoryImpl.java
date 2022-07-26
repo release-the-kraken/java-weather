@@ -29,7 +29,7 @@ public class HibernateForecastRepositoryImpl implements ForecastRepository {
     }
 
     @Override
-    public Optional<Forecast> getActiveForecastForRequiredLocationAndDay(Long id, int days) {
+    public Optional<Forecast> getActiveForecastForRequiredLocationAndDay(Long id, Instant requestedForecastDate, Instant requestDate) {
         Session session = sessionFactory.openSession();
         Transaction transaction = session.beginTransaction();
         try {
@@ -39,7 +39,7 @@ public class HibernateForecastRepositoryImpl implements ForecastRepository {
                             Forecast.class)
                     .setParameter("id", id)
                     .stream()
-                    .filter(f -> filterActiveForecasts(days, f))
+                    .filter(f -> filterActiveForecasts(f, requestedForecastDate, requestDate))
                     .findFirst()
                     .orElse(null);
 
@@ -52,16 +52,14 @@ public class HibernateForecastRepositoryImpl implements ForecastRepository {
         }
     }
 
-    private boolean filterActiveForecasts(int days, Forecast f) {
+    private boolean filterActiveForecasts(Forecast f, Instant requestedForecastDate, Instant requestDate) {
         ZoneId zoneId = ZoneId.of("Europe/Warsaw");
         ZoneOffset zoneOffset = zoneId.getRules().getOffset(LocalDateTime.now());
-        LocalDate requestedForecastDate = LocalDate.now().plusDays(days);
         LocalDate forecastDate = LocalDate.ofInstant(f.getForecastDate(), zoneOffset);
-        Period period = Period.between(requestedForecastDate, forecastDate);
+        Period period = Period.between(forecastDate, LocalDate.ofInstant(requestedForecastDate, zoneOffset));
         int periodDiff = period.getDays();
-        LocalDateTime requestDate = LocalDateTime.now();
         LocalDateTime forecastCreatedDate = LocalDateTime.ofInstant(f.getCreatedDate(), zoneOffset);
-        Duration duration = Duration.between(requestDate, forecastCreatedDate);
+        Duration duration = Duration.between(forecastCreatedDate, LocalDateTime.ofInstant(requestDate, zoneOffset));
         long durationDiff = duration.toHours();
         return periodDiff == 0 && durationDiff >= 0 && durationDiff < 24;
     }
