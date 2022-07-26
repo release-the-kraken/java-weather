@@ -1,6 +1,5 @@
 package com.sda.forecast;
 
-import com.google.gson.annotations.Expose;
 import com.sda.location.Location;
 import lombok.*;
 
@@ -21,8 +20,8 @@ public class Forecast {
     int pressure;
     float windSpeed;
     int windDirection;
-    Instant createdDate;//data utworzenia encji/rekordu, pobrania prognozy
-    Instant forecastDate;//data dla której chcemy prognozę - timestamp z ForecastClientResponseDTO
+    Instant createdDate;
+    Instant forecastDate;
     @ManyToOne
     Location location;
 }

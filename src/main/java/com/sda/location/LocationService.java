@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 public class LocationService {
-    private final HibernateLocationRepositoryImpl locationRepository;
+    private final LocationRepository locationRepository;
     private static final Double MIN_LATITUDE = -90.00;
     private static final Double MAX_LATITUDE = 90.00;
     private static final Double MIN_LONGITUDE = -180.00;
@@ -40,21 +40,19 @@ public class LocationService {
         ZoneId zoneId = ZoneId.of("Europe/Warsaw");
         ZoneOffset zoneOffset = zoneId.getRules().getOffset(LocalDateTime.now());
         location.setCreatedDate(LocalDateTime.now().toInstant(zoneOffset));
-        Location savedLocation = locationRepository.save(location);
-        return savedLocation;
+        return locationRepository.save(location);
     }
     public LocationDTO getByID(Long id){
         Optional<Location> locationOptional = locationRepository.findById(id);
         Location location = locationOptional
                 .orElseThrow(() -> new IllegalArgumentException("No entry with id %s.".formatted(id)));
-        LocationDTO locationDTO = LocationDTO.builder()
+        return LocationDTO.builder()
                 .id(location.getId())
                 .city(location.getCity())
                 .region(location.getRegion())
                 .longitude(location.getLongitude())
                 .latitude(location.getLatitude())
                 .build();
-        return locationDTO;
     }
     List<Location> getAll(){
         return locationRepository.findAll();

@@ -7,20 +7,20 @@ import com.sda.location.*;
 import lombok.RequiredArgsConstructor;
 
 import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 @RequiredArgsConstructor
 public class ForecastService {
-
     private ZoneId zoneId;
     private ZoneOffset zoneOffset;
     private final ForecastRepository hibernateForecastRepository;
     private final LocationService locationService;
     private final LocationRepository locationRepository;
-    private final ForecastHttpRequestClient httpRequestClient;
+    private final HttpRequestClient httpRequestClient;
     private final ObjectMapper objectMapper;
 
-    Forecast getActiveForecast(Long locationId, Integer day) throws JsonProcessingException {
+    Forecast getActiveForecast(Long locationId, Integer days) throws JsonProcessingException {
 
         LocationDTO locationDTO = locationService.getByID(locationId);
         Optional<Location> locationOptional = locationRepository.findById(locationId);
@@ -29,14 +29,22 @@ public class ForecastService {
         Double longitude = locationDTO.getLongitude();
         Double latitude = locationDTO.getLatitude();
         Long id = locationDTO.getId();
-
-        Optional<Forecast> forecastOptional = hibernateForecastRepository.getLastForecastForLocation(id, day);
+        zoneId = ZoneId.of("Europe/Warsaw");
+        zoneOffset = zoneId.getRules().getOffset(LocalDateTime.now());
+        Instant requestedForecastDate = LocalDateTime
+                .now()
+                .plusDays(days)
+                .toInstant(zoneOffset);
+        Instant requestDate = LocalDateTime
+                .now()
+                .toInstant(zoneOffset);
+        Optional<Forecast> forecastOptional = hibernateForecastRepository.getActiveForecastForRequiredLocationAndDay(id, requestedForecastDate, requestDate);
 
         return forecastOptional
-                .orElseGet(() -> getForecastAndSave(day, location, longitude, latitude));
+                .orElseGet(() -> getForecastAndSave(days, location, longitude, latitude));
     }
 
-    private Forecast getForecastAndSave(Integer day, Location location, Double longitude, Double latitude) {
+    private Forecast getForecastAndSave(int day, Location location, Double longitude, Double latitude) {
         try {
             String weatherData = httpRequestClient.getWeatherData(latitude, longitude);
             ForecastClientResponseDTO responseDTO = objectMapper
@@ -50,7 +58,7 @@ public class ForecastService {
         }
     }
 
-    private SingleForecast mapToSingleForecast(ForecastClientResponseDTO responseDTO, Integer day) {
+    SingleForecast mapToSingleForecast(ForecastClientResponseDTO responseDTO, Integer day) {
         ForecastClientResponseDTO.DailyForecastDTO forecastForDay = responseDTO.getDaily().get(day);
         SingleForecast single = new SingleForecast();
         single.setTemperature(forecastForDay.getTemperature().getDaysTemperature());
@@ -62,7 +70,7 @@ public class ForecastService {
         return single;
     }
 
-    private Forecast mapToForecastEntity(SingleForecast single) {
+    Forecast mapToForecastEntity(SingleForecast single) {
         Forecast forecast = new Forecast();
         forecast.setTemperature(single.getTemperature());
         forecast.setHumidity(single.getHumidity());
