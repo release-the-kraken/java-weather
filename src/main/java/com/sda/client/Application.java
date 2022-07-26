@@ -6,11 +6,7 @@ import com.sda.forecast.*;
 import com.sda.location.LocationController;
 import com.sda.location.HibernateLocationRepositoryImpl;
 import com.sda.location.LocationService;
-import com.sda.utils.HibernateUtils;
 import org.hibernate.SessionFactory;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistry;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 import static com.sda.utils.HibernateUtils.Instance.getSessionFactory;
 
@@ -24,7 +20,7 @@ public class Application {
         LocationService locationService = new LocationService(locationRepository);
         LocationController locationController = new LocationController(locationService, objectMapper);
 
-        ForecastHttpRequestClient forecastHttpRequestClient = new ForecastHttpRequestClient();
+        HttpRequestClient forecastHttpRequestClient = new ForecastHttpRequestClient();
         HibernateForecastRepositoryImpl hibernateForecastRepository = new HibernateForecastRepositoryImpl(sessionFactory);
         ForecastService forecastService = new ForecastService(hibernateForecastRepository, locationService, locationRepository, forecastHttpRequestClient, objectMapper);
         ForecastController forecastController = new ForecastController(forecastService, objectMapper);

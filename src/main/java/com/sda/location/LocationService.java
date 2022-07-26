@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 public class LocationService {
-    private final HibernateLocationRepositoryImpl locationRepository;
+    private final LocationRepository locationRepository;
     private static final Double MIN_LATITUDE = -90.00;
     private static final Double MAX_LATITUDE = 90.00;
     private static final Double MIN_LONGITUDE = -180.00;

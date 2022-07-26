@@ -17,7 +17,7 @@ public class ForecastService {
     private final ForecastRepository hibernateForecastRepository;
     private final LocationService locationService;
     private final LocationRepository locationRepository;
-    private final ForecastHttpRequestClient httpRequestClient;
+    private final HttpRequestClient httpRequestClient;
     private final ObjectMapper objectMapper;
 
     Forecast getActiveForecast(Long locationId, Integer days) throws JsonProcessingException {
@@ -58,7 +58,7 @@ public class ForecastService {
         }
     }
 
-    private SingleForecast mapToSingleForecast(ForecastClientResponseDTO responseDTO, Integer day) {
+    SingleForecast mapToSingleForecast(ForecastClientResponseDTO responseDTO, Integer day) {
         ForecastClientResponseDTO.DailyForecastDTO forecastForDay = responseDTO.getDaily().get(day);
         SingleForecast single = new SingleForecast();
         single.setTemperature(forecastForDay.getTemperature().getDaysTemperature());
@@ -70,7 +70,7 @@ public class ForecastService {
         return single;
     }
 
-    private Forecast mapToForecastEntity(SingleForecast single) {
+    Forecast mapToForecastEntity(SingleForecast single) {
         Forecast forecast = new Forecast();
         forecast.setTemperature(single.getTemperature());
         forecast.setHumidity(single.getHumidity());
